@@ -148,13 +148,19 @@
 }
 
 /* Grade tints */
+.stock-card.grade-r::before { background: #e8b84b; }
+.stock-card.grade-r {
+  border-color: rgba(232, 184, 75, 0.35);
+  box-shadow: 0 0 28px -8px rgba(232, 184, 75, 0.4);
+}
 .stock-card.grade-s::before { background: var(--bull); }
 .stock-card.grade-s {
   border-color: rgba(0, 212, 170, 0.25);
   box-shadow: 0 0 24px -10px var(--bull-glow);
 }
 .stock-card.grade-a::before { background: var(--watch); }
-.stock-card.grade-b::before { background: rgba(140, 152, 180, 0.5); }
+.stock-card.grade-b::before { background: rgba(99, 179, 237, 0.5); }
+.stock-card.grade-c::before { background: rgba(249, 115, 22, 0.6); }
 .stock-card.grade-skip::before { background: var(--bear); }
 
 /* ── Grade tile ─────────────────────────────────────────── */
@@ -184,6 +190,13 @@
   color: var(--text-faint);
   letter-spacing: 0.04em;
 }
+.grade-r .grade-tile {
+  background: rgba(232, 184, 75, 0.14);
+  border-color: rgba(232, 184, 75, 0.5);
+  box-shadow: 0 0 16px -4px rgba(232, 184, 75, 0.35);
+}
+.grade-r .grade-tile .gt-letter { color: #e8b84b; }
+.grade-r .grade-tile .gt-score  { color: #e8b84b; }
 .grade-s .grade-tile {
   background: var(--bull-soft);
   border-color: var(--bull);
@@ -196,7 +209,8 @@
   border-color: var(--watch);
 }
 .grade-a .grade-tile .gt-letter { color: var(--watch); }
-.grade-b .grade-tile .gt-letter { color: var(--text); }
+.grade-b .grade-tile .gt-letter { color: rgba(99, 179, 237, 0.9); }
+.grade-c .grade-tile .gt-letter { color: rgba(249, 115, 22, 0.85); }
 .grade-skip .grade-tile .gt-letter { color: var(--bear); }
 
 /* ── Ticker block ───────────────────────────────────────── */
@@ -390,41 +404,73 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(2, 4, 10, 0.78);
+  background: rgba(2, 4, 10, 0.82);
   backdrop-filter: blur(6px);
   z-index: 1000;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 20px;
 }
 .modal-overlay.is-open { display: flex; }
+
+/* 기본 modal-box (signals 등 공용) */
 .modal-box {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r);
+  border-radius: var(--r-lg);
   width: 1040px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 24px 80px -8px rgba(0, 0, 0, 0.7);
 }
+
+/* 스크리너 전용 2-column 모달 */
+.modal-box--split {
+  width: min(92vw, 1480px);
+  max-height: 92vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.modal-body {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.modal-chart-col {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+.modal-detail-col {
+  overflow-y: auto;
+  background: var(--bg);
+  min-height: 0;
+}
+
 .modal-header {
-  padding: 14px 20px;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 0;
 }
 #modal-ticker {
   font-family: var(--font-mono);
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text);
 }
-#modal-company { font-size: 12px; color: var(--text-muted); }
+#modal-company { font-size: 13px; color: var(--text-muted); }
 #modal-close {
   margin-left: auto;
-  width: 28px; height: 28px;
+  width: 30px; height: 30px;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--r);
@@ -434,24 +480,34 @@
   justify-content: center;
   font-size: 14px;
   transition: var(--t);
+  flex-shrink: 0;
 }
 #modal-close:hover { border-color: var(--bear); color: var(--bear); background: var(--bear-soft); }
-#lw-chart-container { width: 100%; height: 420px; background: var(--bg); }
 
-/* ── Modal detail (card-detail 콘텐츠) ──────────────────── */
+/* 차트 컨테이너 — split 모달에서는 flex:1로 채움 */
+#lw-chart-container { width: 100%; background: var(--bg); }
+.modal-box--split #lw-chart-container { flex: 1; min-height: 0; height: auto; }
+/* 기본 모달에서는 고정 높이 유지 */
+.modal-box:not(.modal-box--split) #lw-chart-container { height: 420px; }
+
+/* ── Modal detail ────────────────────────────────────────── */
 #modal-detail {
   border-top: 1px solid var(--border);
-  padding: 20px;
+  padding: 24px;
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+}
+.modal-box--split #modal-detail {
+  border-top: none;
+  padding: 28px 24px;
 }
 
 .modal-section-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-muted);
   display: flex;
@@ -460,41 +516,41 @@
 }
 .ms-score {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--bull);
   background: var(--bull-soft);
   border: 1px solid rgba(0,212,170,0.2);
   border-radius: 4px;
-  padding: 1px 6px;
+  padding: 2px 8px;
 }
 
 .indicator-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
 }
 .grid-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 9px;
+  padding: 10px 14px;
   background: var(--surface);
   border-radius: var(--r);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   border-left: 3px solid transparent;
   color: var(--text-muted);
 }
 .grid-item.pass { border-left-color: var(--bull); color: var(--text); }
 .grid-item.fail { border-left-color: var(--bear); opacity: 0.7; }
-.grid-item .icon { font-size: 13px; flex-shrink: 0; }
+.grid-item .icon { font-size: 14px; flex-shrink: 0; }
 
 /* 펀더멘털 배지 */
-.fundamentals-details { border-top: 1px solid var(--border); padding-top: 12px; }
+.fundamentals-details { border-top: 1px solid var(--border); padding-top: 16px; }
 .fundamentals-toggle {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-muted);
   cursor: pointer;

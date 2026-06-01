@@ -509,3 +509,41 @@ input:focus, select:focus, textarea:focus {
   font-family: var(--font-mono);
   white-space: nowrap;
 }
+
+/* ── TomSelect 다크 테마 오버라이드 ─────────────────────────── */
+.ts-wrapper .ts-control {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+.ts-wrapper .ts-control input {
+  color: var(--text) !important;
+  caret-color: var(--bull);
+}
+.ts-wrapper .ts-control input::placeholder { color: var(--text-faint) !important; }
+.ts-wrapper.focus .ts-control { border-color: var(--border-strong) !important; }
+.ts-dropdown {
+  background: var(--surface-alt) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+}
+.ts-dropdown .option {
+  color: var(--text-muted) !important;
+  padding: 8px 12px !important;
+}
+.ts-dropdown .option:hover,
+.ts-dropdown .option.active { background: var(--surface-deep) !important; color: var(--text) !important; }
+.ts-dropdown .option.selected { background: var(--bull-soft) !important; color: var(--bull) !important; }
+.ts-dropdown .ts-name { font-size: 11px; color: var(--text-faint) !important; margin-left: 6px; }
+.ts-wrapper .ts-control .item {
+  background: var(--surface-deep) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text) !important;
+}
+.ts-wrapper .ts-control .item.active {
+  background: var(--bull-soft) !important;
+  border-color: var(--bull) !important;
+  color: var(--bull) !important;
+}

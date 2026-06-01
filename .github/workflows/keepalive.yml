@@ -16,7 +16,7 @@ jobs:
         run: |
           echo "Pinging ${{ secrets.RENDER_URL }}"
           response=$(curl -s -o /dev/null -w "%{http_code}" \
-            --max-time 30 \
+            --max-time 60 \
             "${{ secrets.RENDER_URL }}/health")
           echo "HTTP status: $response"
           if [ "$response" != "200" ]; then

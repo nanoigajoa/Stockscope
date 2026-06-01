@@ -50,16 +50,24 @@ def _to_ohlcv(df) -> list[dict]:
     ]
 
 
-def _to_ma20(df) -> list[dict]:
-    """MA20 시리즈 → Lightweight Charts line 포맷 (벡터화)."""
+def _to_ma(df, window: int) -> list[dict]:
+    """MA(n) 시리즈 → Lightweight Charts line 포맷 (벡터화)."""
     import numpy as np
-    ma = df["Close"].rolling(20).mean().values
+    ma = df["Close"].rolling(window).mean().values
     dates = [str(ts.date() if hasattr(ts, "date") else ts) for ts in df.index]
     return [
         {"time": d, "value": round(float(v), 4)}
         for d, v in zip(dates, ma)
         if not np.isnan(v)
     ]
+
+
+def _to_ma20(df) -> list[dict]:
+    return _to_ma(df, 20)
+
+
+def _to_ma60(df) -> list[dict]:
+    return _to_ma(df, 60)
 
 
 def _merge_markers(df) -> list[dict]:
@@ -98,6 +106,7 @@ def get_chart_data(ticker: str, period: str = "6mo"):
         "ticker":  ticker,
         "ohlcv":   _to_ohlcv(df),
         "ma20":    _to_ma20(df),
+        "ma60":    _to_ma60(df),
         "markers": _merge_markers(df),
     }
     cache.set(resp_key, resp, expire=300)

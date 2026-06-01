@@ -42,7 +42,7 @@ async def stream_signals(tickers: str = ""):
         if not tickers_list and len(wl) < 10:
             yield _sse("progress", {"stage": "실시간 랭킹 보드 구성을 위해 유니버스 확장 중..."})
             extra_tickers = get_filtered_tickers()
-            wl = list(dict.fromkeys(wl + extra_tickers))[:50]
+            wl = list(dict.fromkeys(wl + extra_tickers))[:30]
 
         if not wl:
             yield _sse("done", {

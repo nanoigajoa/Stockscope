@@ -1,0 +1,55 @@
+{#-- extras SSE 업데이트용. card의 .fundamentals-details를 교체. --#}
+{#-- Context: r (result dict), extras (extras dict) --#}
+{% set news_ok = r.news_ok %}
+{% set ib  = extras.insider_bought %}
+{% set ts  = extras.trend_score %}
+{% set dte = extras.days_to_earnings %}
+{% set sr  = extras.short_ratio %}
+{% set at  = extras.analyst_target %}
+{% set price = r.price or 0 %}
+
+<details class="fundamentals-details">
+  <summary class="fundamentals-toggle">펀더멘털 &amp; 외부 데이터</summary>
+  <div class="indicators">
+
+    {% if news_ok is sameas true %}
+    <span class="badge sig-ok"><span class="badge-label">뉴스</span><span class="badge-val">이상 없음 ✅</span></span>
+    {% elif news_ok is sameas false %}
+    <span class="badge sig-bad"><span class="badge-label">뉴스</span><span class="badge-val">위험 ⚠️</span></span>
+    {% endif %}
+
+    {% if ib is sameas true %}
+    <span class="badge sig-ok"><span class="badge-label">내부자 매수</span><span class="badge-val">있음 ✅</span></span>
+    {% elif ib is sameas false %}
+    <span class="badge sig-dim"><span class="badge-label">내부자 매수</span><span class="badge-val">없음</span></span>
+    {% endif %}
+
+    {% if ts is not none %}
+    <span class="badge {{ 'sig-ok' if ts >= 60 else ('sig-warn' if ts >= 40 else 'sig-dim') }}">
+      <span class="badge-label">구글 관심</span><span class="badge-val">{{ ts }}</span>
+    </span>
+    {% endif %}
+
+    {% if dte is not none and dte >= 0 %}
+    <span class="badge {{ 'sig-bad' if dte <= 7 else ('sig-warn' if dte <= 14 else 'sig-dim') }}">
+      <span class="badge-label">실적</span>
+      <span class="badge-val">D-{{ dte }}{{ "⚠️" if dte <= 7 else "" }}</span>
+    </span>
+    {% endif %}
+
+    {% if sr is not none %}
+    <span class="badge {{ 'sig-bad' if sr >= 5 else 'sig-dim' }}">
+      <span class="badge-label">숏비율</span><span class="badge-val">{{ "%.1f" % sr }}d</span>
+    </span>
+    {% endif %}
+
+    {% if at and price > 0 %}
+    {% set pct = (at - price) / price * 100 %}
+    <span class="badge {{ 'sig-ok' if pct >= 5 else ('sig-warn' if pct >= 0 else 'sig-bad') }}">
+      <span class="badge-label">목표가</span>
+      <span class="badge-val">${{ "%.0f" % at }} ({{ "+" if pct >= 0 else "" }}{{ "%.0f" % pct }}%)</span>
+    </span>
+    {% endif %}
+
+  </div>
+</details>

@@ -36,13 +36,15 @@
         <label>TICKERS · LEAVE BLANK FOR FULL FINVIZ SCAN</label>
         <select id="ticker-select" multiple placeholder="AAPL  MSFT  NVDA  AVGO …"></select>
       </div>
-      <div class="form-group" style="flex: 1; min-width: 140px">
+      <div class="form-group" style="flex: 1; min-width: 160px">
         <label>GRADE FILTER</label>
         <select id="grade-filter">
           <option value="">All grades</option>
-          <option value="S">S grade only</option>
-          <option value="A">A grade only</option>
-          <option value="B">B grade only</option>
+          <option value="R">R — Perfect</option>
+          <option value="S">S — Strong</option>
+          <option value="A">A — Good</option>
+          <option value="B">B — Watch</option>
+          <option value="C">C — Weak</option>
         </select>
       </div>
       <button type="submit" id="submit-btn">▶ RUN SCAN</button>
@@ -82,6 +84,15 @@
       </div>
 
       <div class="form-group" style="margin-top: 16px;">
+        <label>UNIVERSE OPTIONS</label>
+        <div style="display: flex; gap: 16px; margin-top: 8px;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); cursor: pointer;">
+            <input type="checkbox" id="include-penny"> 동전주 포함 ($5 이하)
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 16px;">
         <label>CHECKLIST PIPELINE</label>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 8px;">
           <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); cursor: pointer;">
@@ -114,9 +125,11 @@
 <!-- 필터 바 -->
 <div class="sig-filter-bar" id="screen-filter-bar" style="display: none;">
   <button class="pill is-active" data-grade="">ALL</button>
-  <button class="pill tone-bull" data-grade="S">S GRADE</button>
-  <button class="pill tone-watch" data-grade="A">A GRADE</button>
-  <button class="pill" data-grade="B">B GRADE</button>
+  <button class="pill" data-grade="R" style="color:#e8b84b;border-color:rgba(232,184,75,0.35)">R</button>
+  <button class="pill tone-bull" data-grade="S">S</button>
+  <button class="pill tone-watch" data-grade="A">A</button>
+  <button class="pill" data-grade="B" style="color:rgba(99,179,237,0.9)">B</button>
+  <button class="pill" data-grade="C" style="color:rgba(249,115,22,0.85)">C</button>
   <span class="meta" id="screen-meta">SCORED BY 7-CHECK PIPELINE</span>
 </div>
 
@@ -126,9 +139,9 @@
   </p>
 </div>
 
-<!-- 차트 모달 -->
+<!-- 차트 모달 (2-column) -->
 <div id="chart-modal" class="modal-overlay">
-  <div class="modal-box">
+  <div class="modal-box modal-box--split">
     <div class="modal-header">
       <div class="modal-header-left">
         <span id="modal-ticker"></span>
@@ -136,8 +149,14 @@
       </div>
       <button id="modal-close" aria-label="닫기">✕</button>
     </div>
-    <div id="lw-chart-container"></div>
-    <div id="modal-detail"></div>
+    <div class="modal-body">
+      <div class="modal-chart-col">
+        <div id="lw-chart-container"></div>
+      </div>
+      <div class="modal-detail-col">
+        <div id="modal-detail"></div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

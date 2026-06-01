@@ -590,3 +590,19 @@
   opacity: 0.82;
   text-align: center;
 }
+
+/* ── 2-column 모달 전용 overrides ─────────────────────────── */
+.modal-box--split .modal-signal-section {
+  padding: 24px;
+  gap: 18px;
+  border-top: none;
+}
+.modal-box--split .msd-cats {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.modal-box--split .msd-badge { font-size: 11px; padding: 5px 14px; }
+.modal-box--split .msd-score { font-size: 12px; }
+.modal-box--split .msd-zone  { font-size: 13px; }
+.modal-box--split .msd-zone .lbl { font-size: 11px; }
+.modal-box--split .msd-patterns-row { gap: 6px; }

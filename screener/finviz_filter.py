@@ -11,9 +11,15 @@ def _is_etf(ticker: str, company_name: str) -> bool:
     return any(kw in name_upper for kw in _ETF_KEYWORDS)
 
 
-def get_filtered_tickers(retries: int = 3) -> list[str]:
-    """Finviz 필터 적용 후 ETF 제거한 티커 리스트 반환."""
-    filters = [f"{k}_{v}" for k, v in FINVIZ_FILTERS.items()]
+def get_filtered_tickers(retries: int = 3, include_penny: bool = False) -> list[str]:
+    """Finviz 필터 적용 후 ETF 제거한 티커 리스트 반환.
+    include_penny=True: sh_price(≥$10) 필터 제거, 거래량 기준 완화.
+    """
+    base = dict(FINVIZ_FILTERS)
+    if include_penny:
+        base.pop("sh_price", None)          # 가격 하한 제거
+        base["sh_avgvol"] = "o500"          # 거래량 기준 완화 (500k)
+    filters = [f"{k}_{v}" for k, v in base.items()]
 
     for attempt in range(retries):
         try:

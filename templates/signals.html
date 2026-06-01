@@ -18,7 +18,7 @@
     </span>
     {% endfor %}
     {% if not watchlist %}
-    <span class="wl-empty-hint">종목 없음 — Finviz 전체 유니버스 상위 50개로 자동 분석합니다</span>
+    <span class="wl-empty-hint">종목 없음 — Finviz 상위 30개로 자동 분석합니다</span>
     {% endif %}
   </div>
   <div class="watchlist-add">
@@ -45,27 +45,33 @@
   </div>
 </div>
 
-<!-- 차트 모달 -->
+<!-- 차트 모달 (2-column) -->
 <div id="chart-modal" class="modal-overlay">
-  <div class="modal-box">
+  <div class="modal-box modal-box--split">
     <div class="modal-header">
       <div class="modal-header-left">
         <span id="modal-ticker" class="modal-ticker-name"></span>
       </div>
       <button id="modal-close" aria-label="닫기">✕</button>
     </div>
-    <div id="modal-stock-info" class="modal-stock-info"></div>
-    <div id="lw-chart-container"></div>
-    <div id="marker-tooltip" class="marker-tooltip"></div>
-    <div class="modal-period-bar">
-      <button class="period-btn" data-period="1mo">1M</button>
-      <button class="period-btn" data-period="3mo">3M</button>
-      <button class="period-btn is-active" data-period="6mo">6M</button>
-      <button class="period-btn" data-period="1y">1Y</button>
-      <button class="period-btn" data-period="3y">3Y</button>
-      <button class="period-btn" data-period="5y">5Y</button>
+    <div class="modal-body">
+      <div class="modal-chart-col">
+        <div id="modal-stock-info" class="modal-stock-info"></div>
+        <div id="lw-chart-container"></div>
+        <div id="marker-tooltip" class="marker-tooltip"></div>
+        <div class="modal-period-bar">
+          <button class="period-btn" data-period="1mo">1M</button>
+          <button class="period-btn" data-period="3mo">3M</button>
+          <button class="period-btn is-active" data-period="6mo">6M</button>
+          <button class="period-btn" data-period="1y">1Y</button>
+          <button class="period-btn" data-period="3y">3Y</button>
+          <button class="period-btn" data-period="5y">5Y</button>
+        </div>
+      </div>
+      <div class="modal-detail-col">
+        <div id="modal-detail"></div>
+      </div>
     </div>
-    <div id="modal-detail"></div>
   </div>
 </div>
 {% endblock %}

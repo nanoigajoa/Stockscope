@@ -78,5 +78,5 @@ NEWS_LOOKBACK_HOURS = 48          # 48시간 이내 뉴스만 체크
 # 출력
 # ================================
 OUTPUT_DIR = "output/results"
-SHOW_GRADES = ["S", "A", "B"]
+SHOW_GRADES = ["R", "S", "A", "B", "C"]
 MAX_RESULTS = 20

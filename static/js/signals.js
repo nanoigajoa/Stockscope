@@ -25,6 +25,7 @@ function _startStream(tickers) {
     area.innerHTML = data.html;
     _syncWatchlistTags(data.watchlist || []);
     _applyFilter(_currentFilter);
+    _markSignalWatchlistBtns();
     // subtitle 갱신 시각 업데이트
     const updEl = document.getElementById('signal-updated');
     if (updEl) {
@@ -98,7 +99,7 @@ function _syncWatchlistTags(tickers) {
   if (!tickers.length) {
     const hint = document.createElement('span');
     hint.className = 'wl-empty-hint';
-    hint.textContent = '종목 없음 — Finviz 전체 유니버스 상위 50개로 자동 분석합니다';
+    hint.textContent = '종목 없음 — Finviz 상위 30개로 자동 분석합니다';
     tags.appendChild(hint);
   }
 }
@@ -295,7 +296,7 @@ async function _fetchAndRenderChart(ticker, period = '6mo') {
     container.innerHTML = '';
 
     const chart = LightweightCharts.createChart(container, {
-      width: container.clientWidth, height: 420,
+      autoSize: true,
       layout: { background: { color: '#0f1117' }, textColor: '#94a3b8' },
       grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.03)' } },
       crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
@@ -320,6 +321,13 @@ async function _fetchAndRenderChart(ticker, period = '6mo') {
     });
     candle.setData(data.ohlcv);
     _candleSeries = candle;
+
+    if (data.ma60 && data.ma60.length) {
+      chart.addLineSeries({
+        color: 'rgba(251,191,36,0.65)', lineWidth: 1,
+        priceLineVisible: false, lastValueVisible: false,
+      }).setData(data.ma60);
+    }
 
     if (data.ma20 && data.ma20.length) {
       chart.addLineSeries({
@@ -360,10 +368,6 @@ async function _fetchAndRenderChart(ticker, period = '6mo') {
       tooltip.style.display = 'block';
     });
 
-    new ResizeObserver(() => {
-      if (_lwChart) _lwChart.applyOptions({ width: container.clientWidth });
-    }).observe(container);
-
   } catch (err) {
     container.innerHTML = `<p style="color:#f87171;padding:1rem;text-align:center">차트 로드 실패: ${err.message}</p>`;
   }
@@ -398,6 +402,31 @@ document.getElementById('chart-modal').addEventListener('click', function (e) {
 });
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') _closeModal();
+});
+
+// ── 시그널 카드 ★ Watchlist 추가 ────────────────────────────
+
+function _markSignalWatchlistBtns() {
+  const wlSet = new Set(_getTagTickers());
+  document.querySelectorAll('#signal-result-area .watchlist-btn').forEach(btn => {
+    btn.classList.toggle('wl-added', wlSet.has(btn.dataset.ticker));
+  });
+}
+
+document.getElementById('signal-result-area').addEventListener('click', async function (e) {
+  const btn = e.target.closest('.watchlist-btn');
+  if (!btn) return;
+  const ticker = btn.dataset.ticker;
+
+  if (btn.classList.contains('wl-added')) return; // 이미 추가됨
+
+  try {
+    const res = await fetch(`/api/watchlist/${ticker}`, { method: 'POST' });
+    const data = await res.json();
+    _addTag(ticker);
+    btn.classList.add('wl-added');
+    btn.title = 'Watchlist에 추가됨';
+  } catch {}
 });
 
 // ── 페이지 로드 시 자동 분석 ─────────────────────────────────
