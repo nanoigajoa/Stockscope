@@ -11,7 +11,7 @@ from screener import watchlist_store
 
 logger = logging.getLogger(__name__)
 
-_GRADE_ORDER = {"STRONG BUY": 0, "BUY": 1, "WATCH": 2, "NO SIGNAL": 3}
+_GRADE_ORDER = {"STRONG BUY": 0, "BUY": 1, "HOLD": 2, "NO SIGNAL": 3}
 
 
 def run_signal_analysis(tickers: list[str] | None = None) -> dict:
@@ -118,6 +118,18 @@ def run_signal_analysis(tickers: list[str] | None = None) -> dict:
         df_hourly = fetch_intraday(ticker, "1h", "60d")
         sig = score_signals(df_daily, df_hourly)
 
+        # 수익발표 근접 시 시그널 캡: 변동성 함정 방지
+        days_to_earn = fund.get("days_to_earnings")
+        if days_to_earn is not None:
+            if 0 <= days_to_earn <= 3:
+                if sig["signal_grade"] in ("STRONG BUY", "BUY"):
+                    sig["signal_grade"] = "HOLD"
+                    sig["earnings_cap"] = True
+            elif 4 <= days_to_earn <= 7:
+                if sig["signal_grade"] == "STRONG BUY":
+                    sig["signal_grade"] = "BUY"
+                    sig["earnings_cap"] = True
+
         return {
             "ticker": ticker,
             "price": price,
@@ -134,11 +146,11 @@ def run_signal_analysis(tickers: list[str] | None = None) -> dict:
 
     results = [futures[t].result() for t in tickers]
 
-    # 하락장 캡핑: STRONG BUY / BUY → WATCH
+    # 하락장 캡핑: STRONG BUY / BUY → HOLD
     if not spy_regime:
         for r in results:
             if r["signal_grade"] in ("STRONG BUY", "BUY"):
-                r["signal_grade"] = "WATCH"
+                r["signal_grade"] = "HOLD"
                 r["regime_capped"] = True   # UI 경고 표시용
 
     # STRONG BUY 순 정렬, 동점은 signal_score 내림차순
@@ -147,26 +159,32 @@ def run_signal_analysis(tickers: list[str] | None = None) -> dict:
         -r["signal_score"],
     ))
 
-    counts = {"strong_buy": 0, "buy": 0, "watch": 0, "no_signal": 0}
+    counts = {"strong_buy": 0, "buy": 0, "hold": 0, "no_signal": 0}
     for r in results:
         g = r["signal_grade"]
         if g == "STRONG BUY":
             counts["strong_buy"] += 1
         elif g == "BUY":
             counts["buy"] += 1
-        elif g == "WATCH":
-            counts["watch"] += 1
+        elif g == "HOLD":
+            counts["hold"] += 1
         else:
             counts["no_signal"] += 1
 
     logger.info(
         f"[Signal] 완료: {len(results)}개 | "
         f"STRONG BUY {counts['strong_buy']} | BUY {counts['buy']} | "
-        f"WATCH {counts['watch']} | NO SIGNAL {counts['no_signal']}"
+        f"HOLD {counts['hold']} | NO SIGNAL {counts['no_signal']}"
     )
 
     return {
         "results": results,
-        "summary": {"total": len(results), **counts, "market_open": market_open, "spy_regime": spy_regime},
+        "summary": {
+            "total": len(results),
+            **counts,
+            "watch": counts["hold"],  # 하위 호환 (템플릿 watch 참조 대비)
+            "market_open": market_open,
+            "spy_regime": spy_regime,
+        },
         "watchlist": tickers,
     }

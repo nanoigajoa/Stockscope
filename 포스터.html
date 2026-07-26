@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>StockScope 포스터</title>
+<style>
+  /* ── A4 세로 1장 고정 ─────────────────────────────────── */
+  @page { size: A4 portrait; margin: 0; }
+
+  :root {
+    --ink:    #14181f;
+    --mute:   #5b6472;
+    --line:   #d6dbe2;
+    --accent: #00806a;   /* 인쇄용으로 앱 테마(#00d4aa)를 어둡게 조정 */
+    --soft:   #f2f6f5;
+    --warn:   #a8630c;
+    --bear:   #b3243c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", sans-serif;
+    color: var(--ink);
+    background: #8a9099;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    padding: 9mm 10mm 7mm;
+    margin: 0 auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 3.4mm;
+    overflow: hidden;          /* 넘침 즉시 눈에 보이게 */
+  }
+
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; }
+  }
+
+  /* ── 타이포 스케일 ────────────────────────────────────── */
+  h1 { font-size: 25pt; letter-spacing: -0.5pt; line-height: 1; }
+  h2 { font-size: 8pt;  letter-spacing: 1.4pt; text-transform: uppercase; }
+  h3 { font-size: 8.6pt; letter-spacing: 0.1pt; }
+  p, li, td, th { font-size: 7.3pt; line-height: 1.38; }
+  .sm { font-size: 6.4pt; line-height: 1.32; }
+
+  /* ── 헤더 ─────────────────────────────────────────────── */
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 6mm; border-bottom: 1.6pt solid var(--ink); padding-bottom: 2.4mm;
+  }
+  .brand .tag {
+    font-size: 6.6pt; letter-spacing: 2.2pt; color: var(--accent);
+    font-weight: 700; margin-bottom: 1mm;
+  }
+  .lede { font-size: 8.4pt; line-height: 1.42; max-width: 108mm; color: var(--mute); }
+  .lede b { color: var(--ink); }
+  .stack { display: flex; flex-wrap: wrap; gap: 1mm; justify-content: flex-end; max-width: 56mm; }
+  .chip {
+    font-size: 5.8pt; letter-spacing: 0.3pt; padding: 0.7mm 1.6mm;
+    border: 0.5pt solid var(--line); border-radius: 1mm; color: var(--mute);
+    white-space: nowrap;
+  }
+
+  /* ── 섹션 공통 ────────────────────────────────────────── */
+  .sec-head { display: flex; align-items: baseline; gap: 2.5mm; margin-bottom: 1.8mm; }
+  .sec-num {
+    font-size: 8pt; font-weight: 800; color: #fff; background: var(--ink);
+    width: 5mm; height: 5mm; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+  }
+  .sec-head h2 { color: var(--ink); }
+  .sec-head .hint { font-size: 6.4pt; color: var(--mute); margin-left: auto; }
+
+  /* ── Ⅰ 아이디어 ───────────────────────────────────────── */
+  .idea { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .prob { border-left: 1.6pt solid var(--bear); padding-left: 2.6mm; }
+  .prob .q { font-size: 8.2pt; font-weight: 700; line-height: 1.5; }
+  .prob .q span { color: var(--mute); font-weight: 400; font-size: 7.2pt; }
+
+  .bridge {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    gap: 1.5mm; text-align: center;
+  }
+  .node { border: 0.8pt solid var(--ink); border-radius: 1.2mm; padding: 1.8mm 1mm; }
+  .node .url { font-family: ui-monospace, Menlo, monospace; font-size: 7.4pt; font-weight: 700; }
+  .node .role { font-size: 6.2pt; color: var(--mute); margin-top: 0.4mm; }
+  .node.a { background: var(--soft); border-color: var(--accent); }
+  .arrow { font-size: 6pt; color: var(--accent); font-weight: 700; line-height: 1.2; }
+
+  /* ── Ⅱ 구현 ───────────────────────────────────────────── */
+  /* 높이를 고정해 좌우 컬럼의 사진 하단선을 강제로 맞춘다.
+     텍스트 분량이 달라도 사진이 남은 높이를 flex로 흡수한다. */
+  .impl { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; height: 122mm; }
+  .svc { display: flex; flex-direction: column; gap: 1.8mm; min-height: 0; }
+  .svc-top { display: flex; align-items: baseline; gap: 1.8mm; border-bottom: 0.8pt solid var(--line); padding-bottom: 1.2mm; }
+  .svc-top h3 { color: var(--accent); }
+  .svc-top code { font-family: ui-monospace, Menlo, monospace; font-size: 6.6pt; color: var(--mute); }
+  .svc-q { font-size: 6.6pt; color: var(--mute); font-style: italic; }
+
+  ul { list-style: none; display: flex; flex-direction: column; gap: 0.9mm; }
+  li { padding-left: 3mm; position: relative; }
+  li::before {
+    content: ""; position: absolute; left: 0.6mm; top: 2.3pt;
+    width: 1.1mm; height: 1.1mm; background: var(--accent); border-radius: 50%;
+  }
+  li b { font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 0.8mm 1.2mm; border-bottom: 0.4pt solid var(--line); }
+  th { font-size: 6.2pt; letter-spacing: 0.4pt; color: var(--mute); text-transform: uppercase; }
+  td.w { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: var(--accent); text-align: right; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+
+  .grades { display: flex; gap: 1mm; }
+  .g {
+    flex: 1; text-align: center; font-size: 5.9pt; font-weight: 700;
+    padding: 1mm 0.4mm; border: 0.5pt solid var(--line); border-radius: 0.8mm;
+    white-space: nowrap;
+  }
+  .g.s  { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .g.b  { color: var(--accent); border-color: var(--accent); }
+  .g.h  { color: var(--warn); border-color: var(--warn); }
+  .g.n  { color: var(--mute); }
+
+  .guard {
+    background: var(--soft); border-radius: 1.2mm; padding: 1.8mm 2.2mm;
+    border-left: 1.6pt solid var(--warn);
+  }
+  .guard .lbl { font-size: 6.2pt; font-weight: 800; letter-spacing: 0.6pt; color: var(--warn); }
+
+  /* ── 사진 슬롯 ────────────────────────────────────────── */
+  .shot {
+    border: 0.8pt dashed #9aa4b0; border-radius: 1.2mm; background: #f7f9fa;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.8mm; overflow: hidden; flex: none;
+  }
+  .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .shot .ph { font-size: 6.4pt; font-weight: 700; color: #7c8794; letter-spacing: 0.4pt; }
+  .shot .ph small { display: block; font-weight: 400; font-size: 5.6pt; margin-top: 0.6mm; }
+  /* ①② 는 컬럼의 남은 높이를 채워 하단선이 자동으로 맞는다 */
+  .shot-a, .shot-b { flex: 1 1 auto; min-height: 34mm; }
+  .shot-c { height: 37mm; }
+
+  /* ── Ⅲ Claude Code (줄글) ─────────────────────────────── */
+  .cc { display: grid; grid-template-columns: 52mm 1fr; gap: 5mm; align-items: start; }
+  .cc-col { display: flex; flex-direction: column; gap: 1.4mm; }
+  .cc h3 { font-size: 7pt; letter-spacing: 0.6pt; text-transform: uppercase; color: var(--mute); }
+  .rule {
+    border-left: 1.6pt solid var(--accent); padding: 0.4mm 0 0.4mm 2.6mm;
+    font-size: 8.6pt; font-weight: 700; line-height: 1.38;
+  }
+  .rule small { display: block; font-weight: 400; font-size: 6.6pt; color: var(--mute); margin-top: 1mm; }
+  .prose { display: flex; flex-direction: column; gap: 1.4mm; }
+  .prose p { font-size: 7.5pt; line-height: 1.52; text-align: justify; }
+  .prose code {
+    font-family: ui-monospace, Menlo, monospace; font-size: 6.9pt;
+    font-weight: 700; color: var(--accent); white-space: nowrap;
+  }
+  .prose b { font-weight: 700; }
+  .prose .note { font-size: 6.8pt; color: var(--mute); line-height: 1.46; }
+  .prose .note b { color: var(--bear); }
+
+  /* ── 푸터 ─────────────────────────────────────────────── */
+  footer {
+    margin-top: auto; border-top: 1.2pt solid var(--ink); padding-top: 1.8mm;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 4mm;
+  }
+  .metrics { display: flex; gap: 4mm; }
+  .metric b { font-size: 11pt; color: var(--accent); font-family: ui-monospace, Menlo, monospace; }
+  .metric span { font-size: 6pt; color: var(--mute); letter-spacing: 0.5pt; margin-left: 0.8mm; }
+  footer .kicker { font-size: 6.6pt; color: var(--mute); text-align: right; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══ 헤더 ══════════════════════════════════════════ -->
+  <header>
+    <div class="brand">
+      <div class="tag">US EQUITY DECISION SUPPORT</div>
+      <h1>StockScope</h1>
+    </div>
+    <p class="lede">
+      기술적 분석 데이터를 자동으로 해석해 <b>종목의 건강도</b>와 <b>매수 타이밍</b>을
+      분리해서 제공하는 미국 주식 투자 의사결정 지원 플랫폼
+    </p>
+    <div class="stack">
+      <span class="chip">FastAPI</span><span class="chip">Python 3.12</span>
+      <span class="chip">SSE</span><span class="chip">yfinance</span>
+      <span class="chip">Finviz</span><span class="chip">FRED</span>
+      <span class="chip">Lightweight Charts</span><span class="chip">Render</span>
+    </div>
+  </header>
+
+  <!-- ══ Ⅰ 아이디어 ════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">Ⅰ</span><h2>아이디어</h2>
+      <span class="hint">하나의 점수로 합치지 않는다</span>
+    </div>
+    <div class="idea">
+      <div class="prob">
+        <p class="q">
+          “이 종목이 좋은 종목인가?”<br>
+          “<b>지금</b> 사도 되는가?”
+          <span><br>— 서로 다른 두 질문이다.</span>
+        </p>
+        <p class="sm" style="margin-top:1.4mm; color:var(--mute)">
+          좋은 종목도 고점에서 사면 손실이고, 타이밍이 좋아도 부실한 종목은 회복하지 못한다.
+          기존 도구는 둘을 한 점수로 합쳐 판단 근거를 흐린다.
+        </p>
+      </div>
+      <div>
+        <div class="bridge">
+          <div class="node">
+            <div class="url">/screen</div>
+            <div class="role">종목의 <b>체력</b><br>무엇을 살까</div>
+          </div>
+          <div class="arrow">★<br>WATCH<br>LIST</div>
+          <div class="node a">
+            <div class="url">/signals</div>
+            <div class="role">진입 <b>시점</b><br>언제 살까</div>
+          </div>
+        </div>
+        <p class="sm" style="margin-top:1.4mm; color:var(--mute)">
+          두 질문을 <b>두 개의 독립 파이프라인</b>으로 분리하고 Watchlist로 연결.
+          스크리닝 카드의 ★을 누르면 그 종목의 타이밍 분석이 이어진다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Ⅱ 구현 ════════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">Ⅱ</span><h2>구현</h2>
+      <span class="hint">두 서비스 · 완전 독립 실행</span>
+    </div>
+    <div class="impl">
+
+      <!-- 스크리닝 -->
+      <div class="svc">
+        <div class="svc-top">
+          <h3>Technical Screening</h3><code>/screen</code>
+        </div>
+        <p class="svc-q">기술적으로 건강한 종목 찾기</p>
+        <ul>
+          <li><b>7개 체크리스트</b> — MA 정배열 · RSI/MACD 추세 · 볼린저 위치 · 거래량 변화 · 지지선 · 추세 지속성</li>
+          <li><b>비율 기반 등급</b> 0.67 / 0.44 / 0.22 — 항목을 껐다 켜면 분모가 자동 조정돼 기준이 유지된다</li>
+          <li><b>RSI ≥ 80 하드게이트</b> — 점수가 높아도 무조건 SKIP (과열 추격매수 차단)</li>
+          <li>목표 <b>+8% / +15%</b> · 손절 <b>−7%</b> 자동 계산</li>
+          <li>실적 D−N · 숏비율 · 목표가 · 내부자 매수 · Google Trends · 의원 거래 배지</li>
+        </ul>
+        <div class="grades">
+          <span class="g s">S 즉시검토</span><span class="g b">A 분할</span>
+          <span class="g h">B 대기</span><span class="g n">SKIP</span>
+        </div>
+        <div class="shot shot-a">
+          <div class="ph">사진 ① 스크리닝 결과 카드
+            <small>S등급 · 배지가 많이 붙은 카드 권장</small></div>
+          <!-- 교체: <img src="shots/screen.png" alt=""> -->
+        </div>
+      </div>
+
+      <!-- 시그널 -->
+      <div class="svc">
+        <div class="svc-top">
+          <h3>Trading Signal</h3><code>/signals</code>
+        </div>
+        <p class="svc-q">매수·매도 타이밍 분석</p>
+        <table>
+          <tr><th>3축 독립 스코어링</th><th style="text-align:right">가중</th></tr>
+          <tr><td><b>Entry Position</b> — 지금이 매수 구간인가 <span class="sm">(ATR 진입존 · BB %B)</span></td><td class="w">40%</td></tr>
+          <tr><td><b>Momentum Strength</b> — 상승의 힘과 회복력 <span class="sm">(RSI 종형 · ADX)</span></td><td class="w">35%</td></tr>
+          <tr><td><b>Market Structure</b> — 기관 매집·수급 <span class="sm">(Sweep · FVG · POC)</span></td><td class="w">25%</td></tr>
+          <tr><td>수급 보너스 — CMF와 OBV가 <b>동시에</b> 확인될 때만</td><td class="w">+.05</td></tr>
+        </table>
+        <p class="sm" style="color:var(--mute)">
+          한 축이 0이면 나머지가 높아도 신호가 아니다. 세 축은 서로 다른 정보 계층
+          (가격 위치 / 가격 속도 / 자금 방향)에서 독립 계산된다.
+        </p>
+        <div class="grades">
+          <span class="g s">STRONG BUY</span><span class="g b">BUY</span>
+          <span class="g h">HOLD</span><span class="g n">NO SIGNAL</span>
+        </div>
+        <div class="guard">
+          <div class="lbl">점수를 그대로 믿지 않는 안전장치</div>
+          <p class="sm" style="margin-top:0.8mm">
+            <b>등급 캡핑</b> — 하락장(SPY&lt;MA50) · 실적발표 D−0~7 · MA 역배열 시 상위 등급 자동 하향<br>
+            <b>EXIT 감지</b> — 손절선 이탈 · RSI&gt;78 · 역배열 전환 · 진입존 극단 이탈
+          </p>
+        </div>
+        <div class="shot shot-b">
+          <div class="ph">사진 ② 시그널 카드
+            <small>3축 스코어 바 · Confluence · EXIT 배지</small></div>
+          <!-- 교체: <img src="shots/signal.png" alt=""> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 차트 + SSE -->
+    <div style="display:grid; grid-template-columns: 1.55fr 1fr; gap:4mm; margin-top:2.6mm">
+      <div class="shot shot-c">
+        <div class="ph">사진 ③ 캔들 차트 모달
+          <small>매수 6종 / 매도 4종 마커가 함께 찍힌 구간</small></div>
+        <!-- 교체: <img src="shots/chart.png" alt=""> -->
+      </div>
+      <div class="cc-col" style="gap:1.2mm">
+        <h3>Interface</h3>
+        <ul>
+          <li><b>SSE 실시간 스트리밍</b> — 수십 종목을 병렬 채점하는 동안에도 화면이 멈추지 않고 진행 상황이 즉시 반영</li>
+          <li><b>차트 위 마커</b> — 매수 6종 · 매도 4종을 캔들에 직접 표시</li>
+          <li><b>랭킹 보드</b> — Watchlist가 비면 Finviz 필터 결과를 시총 상위로 채워 자동 분석</li>
+          <li><b>사이드바 라이브</b> — SPY · VIX · 공포탐욕(15분) · FRED 매크로(7일)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Ⅲ Claude Code ═════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">Ⅲ</span><h2>Claude Code 활용법</h2>
+      <span class="hint">문맥을 채팅이 아니라 파일에 저장한다</span>
+    </div>
+    <div class="cc">
+      <div class="rule">
+        “Design Document 없이는 코드를 생성하지 않는다.”
+        <small>컨텍스트를 대화창이 아니라 파일에 저장한다.</small>
+      </div>
+
+      <div class="prose">
+        <p>
+          아키텍처를 <code>design_doc.md</code>에 먼저 고정하고, 데이터 수집 · 지표 계산 · 채점 · 프론트를
+          <b>레이어별 에이전트로 나눠 병렬로 진행했다.</b> 각 에이전트는 전체 코드베이스가 아니라
+          자기 레이어의 <code>skills/</code> 문서만 읽는다. 반복되는 구현 패턴을 스킬로 추출해 두면
+          <b>여러 에이전트가 동시에 작업해도 같은 규약으로 수렴하고</b>, 세션마다 아키텍처를 다시 설명할 필요가 없다.
+        </p>
+        <p>
+          되돌릴 수 없는 판단은 <code>adr/</code>에 19건, 재사용 패턴은 <code>skills/</code>에 5건 남겼다.
+          실행은 <code>phases/</code> 단위로 끊고 DoD를 채우지 못하면 다음으로 넘기지 않았다.
+          컨텍스트는 “항상 로드(규약 · 설계)”와 “필요할 때만 로드(스킬 · 페이즈)”로 나눠,
+          완료된 페이즈는 다시 읽지 않는다.
+        </p>
+        <p class="note">
+          스킬 문서마다 안티패턴을 함께 적었다. Finviz가 티커 셀에 로고 이니셜을 넣으면서
+          파서가 <b>에러 없이 전 컬럼을 한 칸씩 밀어버린</b> 사고도, 원인과 검증법을 그 자리에 기록해 재발을 막았다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 푸터 ══════════════════════════════════════════ -->
+  <footer>
+    <div class="metrics">
+      <div class="metric"><b>19</b><span>ADR</span></div>
+      <div class="metric"><b>5</b><span>SKILLS</span></div>
+      <div class="metric"><b>2,565</b><span>DOC LINES</span></div>
+      <div class="metric"><b>2</b><span>SERVICES</span></div>
+    </div>
+    <p class="kicker">문서가 곧 컨텍스트이고, 컨텍스트가 곧 코드 품질이다.</p>
+  </footer>
+
+</div>
+</body>
+</html>

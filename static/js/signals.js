@@ -194,7 +194,7 @@ function _renderSignalDetail(info) {
   const detail = document.getElementById('modal-detail');
   if (!info || !info.grade) { detail.innerHTML = ''; return; }
 
-  const GRADE_CLS  = { 'STRONG BUY': 'grade-strong-buy', 'BUY': 'grade-buy', 'WATCH': 'grade-watch', 'NO SIGNAL': 'grade-nosignal' };
+  const GRADE_CLS  = { 'STRONG BUY': 'grade-strong-buy', 'BUY': 'grade-buy', 'HOLD': 'grade-hold', 'WATCH': 'grade-hold', 'NO SIGNAL': 'grade-nosignal' };
   const CAT_LABELS = { entry: '진입', momentum: '모멘텀', structure: '구조', volume: '수급' };
 
   const gradeCls = GRADE_CLS[info.grade] || 'grade-nosignal';
@@ -252,6 +252,26 @@ function _renderSignalDetail(info) {
       `</div>`;
   }
 
+  // EXIT 신호 섹션
+  const exitSig = info.exit_signal || {};
+  let exitSection = '';
+  if (exitSig.exit && exitSig.reasons && exitSig.reasons.length) {
+    const exitReasons = exitSig.reasons.map(r =>
+      `<div class="exit-reason-row">⚠ ${r}</div>`
+    ).join('');
+    exitSection =
+      `<div class="msd-exit-section">` +
+      `  <div class="exit-header"><span class="exit-title">⚠ EXIT CONDITIONS</span></div>` +
+      `  <div class="exit-reasons">${exitReasons}</div>` +
+      `  <p class="exit-note">이미 보유 중이라면 청산 또는 손절 재검토를 권고합니다.</p>` +
+      `</div>`;
+  }
+
+  // 수익발표 배지
+  const earningsBadge = info.earnings_cap
+    ? `<span class="msd-earnings-note">📅 수익발표 7일 이내 — 변동성 주의</span>`
+    : '';
+
   detail.innerHTML =
     `<div class="modal-signal-section">` +
     `  <div class="msd-header">` +
@@ -259,9 +279,11 @@ function _renderSignalDetail(info) {
     `    <span class="msd-score">SCORE <b>${score}</b>/100</span>` +
     `    <span class="msd-zone"><span class="lbl">ENTRY</span><span class="val">${zone}</span></span>` +
     `  </div>` +
+    (earningsBadge ? `  <div class="msd-earnings-row">${earningsBadge}</div>` : '') +
     `  <div class="msd-cats">${cats}</div>` +
     `  <div class="msd-patterns-row">${patterns}</div>` +
     cfSection +
+    exitSection +
     `</div>`;
 }
 

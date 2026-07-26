@@ -126,6 +126,36 @@ def _detect_recent_bullish(df: pd.DataFrame, lookback: int = 3) -> list[str]:
         return []
 
 
+def check_exit_conditions(
+    price: float,
+    rsi_val: float | None,
+    atr: dict | None,
+    ma: dict,
+) -> dict:
+    """
+    포지션 청산 조건 확인 (entry_price 없이 기술적 조건만).
+
+    Returns: {"exit": bool, "reasons": list[str]}
+    """
+    reasons = []
+
+    if atr and price <= atr["signal_stop"]:
+        reasons.append(f"손절선 이탈 (${atr['signal_stop']:.2f})")
+
+    if rsi_val is not None and rsi_val > 78:
+        reasons.append(f"RSI 과매수 ({rsi_val:.0f})")
+
+    if ma.get("daily") == "bearish":
+        reasons.append("MA 역배열 시작")
+
+    if atr:
+        overbought_ceiling = atr["entry_high"] + atr["atr"]
+        if price > overbought_ceiling:
+            reasons.append("진입존 극단 이탈 (단기 과열)")
+
+    return {"exit": len(reasons) > 0, "reasons": reasons}
+
+
 def score_signals(
     df_daily: pd.DataFrame,
     df_hourly: pd.DataFrame | None = None,
@@ -134,11 +164,12 @@ def score_signals(
     3축 독립 가중 매매타이밍 스코어링.
 
     Returns:
-        signal_grade:      "STRONG BUY" | "BUY" | "WATCH" | "NO SIGNAL"
+        signal_grade:      "STRONG BUY" | "BUY" | "HOLD" | "NO SIGNAL"
         signal_score:      float 0.0~1.0
         signal_breakdown:  {"entry", "momentum", "structure", "volume"}
         detected_patterns: list[str]
         entry_low, entry_high, signal_stop
+        exit_signal:       {"exit": bool, "reasons": list[str]}
     """
     try:
         atr      = calc_atr_zones(df_daily)
@@ -181,16 +212,16 @@ def score_signals(
         # ── 2. 모멘텀 강도 (35%) ────────────────────────────
         # "가격 회복 속도가 얼마나 강한가"
         # RSI 구간별 점수
+        _rsi_val = stoch.get("rsi") if stoch else None
         rsi_score = 0.0
-        if stoch:
-            rsi = stoch.get("rsi")
-            if rsi is not None:
-                if 45 <= rsi <= 65:
-                    rsi_score = 1.0 - abs(rsi - 55) / 10   # 55→1.0, 45/65→0.0
-                elif 35 <= rsi < 45:
-                    rsi_score = (rsi - 35) / 10 * 0.6       # 35→0.0, 45→0.6
-                elif 65 < rsi <= 75:
-                    rsi_score = (75 - rsi) / 10 * 0.4       # 65→0.4, 75→0.0
+        if _rsi_val is not None:
+            rsi = _rsi_val
+            if 45 <= rsi <= 65:
+                rsi_score = 1.0 - abs(rsi - 55) / 10   # 55→1.0, 45/65→0.0
+            elif 35 <= rsi < 45:
+                rsi_score = (rsi - 35) / 10 * 0.6       # 35→0.0, 45→0.6
+            elif 65 < rsi <= 75:
+                rsi_score = (75 - rsi) / 10 * 0.4       # 65→0.4, 75→0.0
 
         # RSI 히스테리시스: 30 이하 방문 후 35 미회복 시 억제 (데드캣 바운스 필터)
         try:
@@ -222,16 +253,17 @@ def score_signals(
 
         rsi_base = min(rsi_score + max(stoch_bonus, z_bonus), 1.0)
 
-        # ADX(30): 추세 강도 — 횡보(ADX<20) vs 추세(ADX>50)
+        # ADX(10): 단기 추세 강도 — 노이즈(ADX<15) vs 강한 추세(ADX>35)
+        # ADX(30)은 6~8주 추세를 측정해 2~3일 예측에 후행. ADX(10)으로 교체.
         adx_intensity = 0.5  # 계산 불가 시 중립
         try:
-            adx_df = df_daily.ta.adx(length=30)
+            adx_df = df_daily.ta.adx(length=10)
             if adx_df is not None and not adx_df.empty:
                 adx_col = [c for c in adx_df.columns if c.startswith("ADX_")]
                 if adx_col:
                     adx_val = float(adx_df[adx_col[0]].iloc[-1])
                     if not pd.isna(adx_val):
-                        adx_intensity = min(max((adx_val - 20) / 30, 0.0), 1.0)
+                        adx_intensity = min(max((adx_val - 15) / 20, 0.0), 1.0)
         except Exception:
             pass
 
@@ -286,9 +318,12 @@ def score_signals(
         elif total >= 0.40:
             grade = "BUY"
         elif total >= 0.20:
-            grade = "WATCH"
+            grade = "HOLD"
         else:
             grade = "NO SIGNAL"
+
+        # ── 청산 조건 체크 ───────────────────────────────────
+        exit_sig = check_exit_conditions(price, _rsi_val, atr, ma)
 
         # ── Confluence Check ──────────────────────────────────
         # 3개 독립 정보 계층(가격구조·가격속도·자금방향)이 동시에 충족 → 고신뢰도
@@ -335,6 +370,7 @@ def score_signals(
             "confluence_count":  len(confluence_layers),
             "confluence_layers": confluence_layers,
             "confluence_detail": confluence_detail,
+            "exit_signal":       exit_sig,
         }
 
     except Exception as e:
@@ -352,4 +388,5 @@ def score_signals(
             "confluence_count":  0,
             "confluence_layers": [],
             "confluence_detail": {},
+            "exit_signal":       {"exit": False, "reasons": []},
         }

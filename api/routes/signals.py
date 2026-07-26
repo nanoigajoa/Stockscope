@@ -41,7 +41,9 @@ async def stream_signals(tickers: str = ""):
 
         if not tickers_list and len(wl) < 10:
             yield _sse("progress", {"stage": "실시간 랭킹 보드 구성을 위해 유니버스 확장 중..."})
-            extra_tickers = get_filtered_tickers()
+            # 아래에서 [:30]으로 잘라 쓰므로 알파벳순이면 A~로 시작하는 종목만 남는다.
+            # 시가총액 내림차순으로 받아 유동성 높은 대형주가 랭킹 보드에 오르게 한다.
+            extra_tickers = get_filtered_tickers(order="-marketcap")
             wl = list(dict.fromkeys(wl + extra_tickers))[:30]
 
         if not wl:
