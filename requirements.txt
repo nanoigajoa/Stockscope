@@ -9,6 +9,7 @@ diskcache>=5.6.0
 # finviz_filter.py는 requests+lxml로 Finviz 스크리너를 직접 파싱한다.
 # (finviz 라이브러리는 티커 셀의 로고 이니셜 때문에 컬럼이 밀려 제거)
 lxml>=5.0.0
+cssselect>=1.2.0        # lxml .cssselect() 호출에 필요 (lxml 기본 포함 아님)
 
 # 웹앱
 fastapi>=0.109.0

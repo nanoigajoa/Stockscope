@@ -21,15 +21,19 @@
 - **Finviz 사전 필터** — 미국 상장 · 평균거래량 2M↑ · 주가 $10↑ · 상대거래량 1.5배↑ ·
   MA20/50/200 위 · EPS QoQ 양수 (`config.py: FINVIZ_FILTERS`)
 - **7개 기술적 체크리스트** — MA 정배열, RSI, MACD, 볼린저밴드, 거래량, 지지선, 추세 지속성
-- **S / A / B / SKIP 등급** — 비율 기반 자동 분류, 목표가(+8%/+15%) · 손절(-7%) 자동 계산
+- **R / S / A / B / C / SKIP 등급** — 비율 기반 자동 분류, 목표가(+8%/+15%) · 손절(-7%) 자동 계산
 - **펀더멘털 배지** — 실적발표 D-N, 숏비율, 애널리스트 목표가, 내부자 매수 여부
 - **외부 시그널** — Google Trends 관심도, 의원 거래 내역
-- **사이드바 라이브** — SPY · VIX · 공포탐욕지수 (15분 캐시), FRED 매크로 (7일 캐시)
+- **ADVANCED 옵션** — 목표가·손절 비율 조정, 체크리스트 항목 개별 on/off(분모 자동 조정),
+  등급 필터, 동전주 포함($5 이하), 상위 20개 표시
+- **사이드바 라이브** — SPY · VIX (15분 캐시), 공포탐욕지수 자체 계산 (6시간 캐시),
+  FRED 매크로 (7일 캐시)
 
 ### 매매시그널 `/signals`
-- **3축 독립 스코어링** — 진입 포지션(40%) + 모멘텀 강도(35%) + 구조 확인(25%) + 수급 보너스(+5%)
+- **3축 독립 스코어링** — 진입 포지션(40%) + 모멘텀 강도(35%) + 구조 확인(25%) + 수급 보너스(최대 +0.05)
   - **진입 포지션**: ATR 진입존(MA60~MA20+0.5ATR) 위치 + BB %B 과매도 위치
-  - **모멘텀 강도**: RSI 종형 곡선(45~65 최고점) + ADX 추세 강도
+  - **모멘텀 강도**: RSI 종형 곡선(45~65 최고점) + ADX(10) 단기 추세 강도
+    · RSI 히스테리시스 — 30 이하 방문 후 35 미회복 시 점수 억제(데드캣 바운스 필터)
   - **구조 확인**: LiquiditySweep / FVG / POC 기관 신호 + 캔들 패턴
   - **수급 보너스**: CMF + OBV 이중 확인 시 가산 (최대 +0.05)
 - **STRONG BUY / BUY / HOLD / NO SIGNAL** 4등급, 진입가 밴드 + 손절가 표시
@@ -42,7 +46,7 @@
 - **SSE 실시간 스트리밍** — 분석 진행 상황 즉시 반영
 
 ### 캔들 차트 모달
-- **Lightweight Charts 4.2** — OHLCV 캔들스틱 + MA20
+- **Lightweight Charts 4.2** — OHLCV 캔들스틱 + MA20(blue) · MA60(amber)
 - **매수 마커 6종** — MA5골든 / FVG반등 / RSI+볼륨 / RSI반등 / MACD전환 / 볼륨급증
 - **매도 마커 4종** — 데드크로스 / RSI과열이탈 / MA20붕괴 / 샹들리에이탈(Chandelier Exit)
 
@@ -53,10 +57,10 @@
 | 레이어 | 기술 |
 |--------|------|
 | 백엔드 | FastAPI + Jinja2 + SSE, Python 3.12 |
-| 데이터 | yfinance · pytrends · quiverquant |
-| 스크래핑 | Finviz 스크리너 (requests + lxml 직접 파싱), CNN 공포탐욕지수 |
-| 외부 API | FRED REST API (매크로), Yahoo Finance Search (티커 자동완성) |
-| 캐시 | diskcache (TTL별 다단계) |
+| 데이터 | yfinance · pandas-ta · pytrends · quiverquant · sec-edgar-downloader |
+| 스크래핑 | Finviz 스크리너 — requests + lxml/cssselect 직접 파싱 (페이지네이션·재시도) |
+| 외부 API | FRED REST API (매크로), Yahoo Finance Search (티커 자동완성), SEC EDGAR (Form 4) |
+| 캐시 | diskcache — TTL 다단계 (15분 / 6시간 / 24시간 / 7일) |
 | 프론트엔드 | Vanilla JS · TomSelect · Lightweight Charts 4.2 |
 | 배포 | Render (free plan) |
 | 스케줄 | GitHub Actions (keepalive + daily batch) |
@@ -116,21 +120,21 @@ fin_auto/
 │   ├── data_fetcher.py         # OHLCV 일봉·분봉 수집, TTL 캐시
 │   ├── indicators.py           # 기술적 지표 계산 (MA/RSI/MACD/BB/ATR/StochRSI/OBV/CMF)
 │   ├── checklist.py            # 7개 체크리스트 채점, RSI 하드게이트
-│   ├── grader.py               # S/A/B/SKIP 비율 기반 등급
+│   ├── grader.py               # R/S/A/B/C 비율 기반 등급 + 목표가·손절 계산
 │   ├── signal_scorer.py        # 3축 가중 시그널 채점 + EXIT 조건 판정
 │   ├── buy_signal.py           # 매수 마커 생성 (6종 이유)
 │   ├── sell_signal.py          # 매도 마커 생성 (4종 이유)
-│   ├── finviz_filter.py        # Finviz 사전 필터 (requests + lxml, 페이지네이션)
+│   ├── finviz_filter.py        # Finviz 사전 필터 (requests + lxml/cssselect, 페이지네이션)
 │   ├── cache_manager.py        # diskcache 중앙 관리
 │   ├── watchlist_store.py      # Watchlist JSON CRUD
 │   ├── fundamental_fetcher.py  # 펀더멘털 (실적일/숏비율/목표가)
 │   ├── macro_fetcher.py        # FRED + yfinance 사이드바 라이브 데이터
-│   ├── fear_greed_fetcher.py   # CNN 공포탐욕지수
+│   ├── fear_greed_fetcher.py   # 공포탐욕지수 자체 계산 (VIX + SPY 125일 모멘텀)
 │   ├── trends_fetcher.py       # Google Trends
 │   ├── congress_fetcher.py     # 의원 거래 내역
 │   ├── insider_fetcher.py      # SEC Form 4 내부자 거래
 │   ├── news_filter.py          # 뉴스 위험 키워드 필터
-│   ├── nl_generator.py         # 기술적 지표 기반 자연어 브리핑
+│   ├── nl_generator.py         # 자연어 브리핑 — Explore 제거 후 미사용(정리 대상)
 │   └── batch_scheduler.py      # 서버 시작 시 백그라운드 배치
 ├── templates/
 │   ├── base.html               # 사이드바 + 매크로 레이아웃
@@ -156,7 +160,10 @@ fin_auto/
 │   ├── adr/                    # 의사결정 기록 ADR-001 ~ 019
 │   ├── skills/                 # 재사용 구현 스킬 레퍼런스 (5종)
 │   └── phases/                 # 페이즈별 구현 이력 + 향후 계획
-├── tests/
+├── tests/                      # pytest — test_cache · test_indicators
+│                               #   (test_explore.py는 삭제된 모듈 참조 — 정리 대상)
+├── scripts/
+│   └── download_congress_data.py
 ├── .github/workflows/
 │   ├── keepalive.yml           # 10분 간격 ping (Render 슬립 방지)
 │   └── daily-batch.yml         # KST 07:00 배치 refresh 트리거
@@ -164,9 +171,13 @@ fin_auto/
 ├── CLAUDE.md                   # Claude Code 작업 규약 (워크플로·문서 로딩 전략)
 ├── DEVLOG.md                   # 개발 일지
 ├── config.py                   # 전역 설정값
+├── requirements.txt
+├── run.sh                      # 8000 포트 정리 후 uvicorn --reload 재시작
 ├── render.yaml                 # Render 배포 설정
 └── .python-version             # Python 3.12.0 고정
 ```
+
+> 주요 파일만 표기. 실제 트리에는 작업 메모용 md가 추가로 존재한다.
 
 ---
 
@@ -174,14 +185,18 @@ fin_auto/
 
 ### 스크리닝 (체크리스트 비율 기반)
 
-| 등급 | 조건 | 행동 |
-|------|------|------|
-| S | score/max ≥ 0.67 | 즉시 진입 검토 |
-| A | score/max ≥ 0.44 | 분할 진입 검토 |
-| B | score/max ≥ 0.22 | 대기 |
-| SKIP | RSI ≥ 80 또는 비율 미달 | 진입 금지 |
+기본 7개 항목 기준 `score / max_score` 비율로 판정 (`screener/grader.py`).
 
-체크리스트 항목 비활성화 시 분모(max) 자동 조정.
+| 등급 | 비율 | 7개 기준 | 행동 |
+|------|------|:--------:|------|
+| R | ≥ 0.85 | 6/7 | 전체 조건 충족 — 즉시 전량 진입 |
+| S | ≥ 0.71 | 5/7 | 강한 진입 신호 — 분할 진입 권장 |
+| A | ≥ 0.57 | 4/7 | 진입 검토 (1차 50% → 확인 후 2차 50%) |
+| B | ≥ 0.42 | 3/7 | 일부 조건 미충족 — 추가 확인 필요 |
+| C | ≥ 0.28 | 2/7 | 최소 조건 충족 — 대기 권장 |
+| SKIP | RSI ≥ 80 또는 비율 미달 | — | 진입 금지 |
+
+체크리스트 항목을 비활성화하면 분모(`max_score`)가 자동 조정돼 등급 기준이 유지된다.
 
 ### 매매시그널 (3축 가중 합산)
 
